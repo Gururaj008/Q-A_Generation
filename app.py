@@ -4,7 +4,7 @@ import json
 import openai
 import warnings
 warnings.filterwarnings('ignore')
-openai.api_key="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"
+openai.api_key="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"
 def question_and_answers(input_text,no_ques,no_options,no_correct):
     if isinstance(input_text, str):
         template_1 ='''
@@ -88,13 +88,10 @@ def question_and_answers(input_text,no_ques,no_options,no_correct):
         input1 = [para for para in input1 if para.strip()]
         merged_paras = " ".join(input1)
         input2 = 'Paragraph' + merged_paras
-        st.write(query)
-
         if no_correct == 1:
             input3 = template_1 + query + input2
         else :
             input3 = template_2 + query + input2
-
         response = openai.Completion.create(
               model="text-davinci-003",
               prompt=input3,
@@ -107,6 +104,13 @@ def question_and_answers(input_text,no_ques,no_options,no_correct):
         res1 = json.loads(str(response))
         res = res1['choices'][0]['text']
         items = res.split('\n')
+        st.markdown("""
+                    <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Agdasima');
+                    .custom-text-02 { font-family: 'Perpetua', sans-serif; font-size: 30px;color:  #f9e79f   }
+                    </style>
+                    <p class="custom-text-02"> Displaying the generated Q&A </p>
+                    """, unsafe_allow_html=True)
         for i in items:
             st.write(i)
     else:
@@ -164,7 +168,56 @@ if __name__ == "__main__":
     st.write('')
     if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
         input_paragraph = input_text
-        qanda = question_and_answers(input_text,no_ques,no_options,no_correct)
-        # for i in qanda:
-        #     st.write(i)
+        question_and_answers(input_text,no_ques,no_options,no_correct)
+
+
+    st.divider()
+    st.subheader(':orange[Developer contact details]')
+    st.write('')
+    st.write('')
+    col301, col302 = st.columns([10,20])
+    with col301:
+        st.markdown(":orange[email id:]")
+        st.write('')
+    with col302:
+        st.markdown(":yellow[gururaj008@gmail.com]")
+        st.write('')
+
+    col301, col302 = st.columns([10,20])
+    with col301:
+        st.markdown(":orange[Personal webpage hosting other Datascience projects :]")
+        st.write('')
+    with col302:
+        st.markdown(":yellow[http://gururaj008.pythonanywhere.com/]")
+        st.write('')
+
+    col301, col302 = st.columns([10,20])
+    with col301:
+        st.markdown(":orange[LinkedIn profile :]")
+        st.write('')
+    with col302:
+        st.markdown(":yellow[https://www.linkedin.com/in/gururaj-hc-data-science-enthusiast/]")
+        st.write('')
+
+
+    col301, col302 = st.columns([10,20])
+    with col301:
+        st.markdown(":orange[Github link:]")
+        st.write('')
+    with col302:
+        st.markdown(":yellow[https://github.com/Gururaj008]")
+        st.write('')
+
+            
+            
+    st.divider()
+    col1001, col1002, col1003,col1004, col1005 = st.columns([10,10,10,10,15])
+    with col1005:
+        st.markdown("""
+                                <style>
+                                @import url('https://fonts.googleapis.com/css2?family=Agdasima');
+                                .custom-text-10 { font-family: 'Agdasima', sans-serif; font-size: 28px;color:cyan }
+                                </style>
+                                <p class="custom-text-10">An Effort by : MAVERICK_GR</p>
+                                """, unsafe_allow_html=True)    
         
