@@ -4,7 +4,7 @@ import json
 import openai
 import warnings
 warnings.filterwarnings('ignore')
-headers = {"authorization" :st.sectets['auth-token'],"content-type":"application/json"}
+headers = {"authorization" :st.secrets['auth-token'],"content-type":"application/json"}
 def question_and_answers(input_text,no_ques,no_options,no_correct):
     if isinstance(input_text, str):
         template_1 ='''
