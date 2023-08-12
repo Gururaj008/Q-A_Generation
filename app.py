@@ -5,7 +5,7 @@ import openai
 import warnings
 warnings.filterwarnings('ignore')
 openai.api_key = st.secrets['auth_key']
-def question_and_answers(input_text,no_ques,no_options,no_correct):
+def question_and_answers(input_text,no_ques,no_correct):
     if isinstance(input_text, str):
         template_1 ='''
         paragraph: India, officially known as the Republic of India, is a diverse and vibrant country located in South Asia. 
@@ -85,8 +85,7 @@ def question_and_answers(input_text,no_ques,no_options,no_correct):
         '''
         query = f'''Please stick to the following instructions while generating the response \
         - Generate only {no_ques} questions 
-        - Having only {no_options} options as probable answers 
-        - And {no_correct} correct answer for each and every question 
+        - With {no_correct} correct answer for each and every question 
         - Please return the question and answers in the same format as specified in the template that is passed as reference for response generation. 
         - Please mandatorily add a question mark at the end of every question. 
         - Please compulsorily generate only specified number of options as answers, dont generate 4 options everytime as default'''
@@ -164,17 +163,15 @@ if __name__ == "__main__":
     
     input_text = st.text_input('','Please enter your text here')
     st.write('')
-    col007, col008, col009 = st.columns([10,10,10])
+    col007, col008 = st.columns([10,10])
     with col007:
         no_ques = int(st.radio(label = 'Please choose the number of questions to generate',options = [1,2,3,4]))
     with col008:
-        no_options = int(st.radio('Please choose the number of options as probable answers to generate', options = [2,3,4]))
-    with col009:
         no_correct = int(st.radio('Please choose the number of correct/nearly_correct answers to generate', options = [1,2]))
     st.write('')
     if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
         input_paragraph = input_text
-        question_and_answers(input_text,no_ques,no_options,no_correct)
+        question_and_answers(input_text,no_ques,no_correct)
 
 
     st.divider()
