@@ -5,7 +5,7 @@ import openai
 import warnings
 warnings.filterwarnings('ignore')
 openai.api_key = st.secrets['auth_key']
-def question_and_answers(input_text,no_ques,no_correct):
+def question_and_answers(input_text,no_correct):
     if isinstance(input_text, str):
         template_1 ='''
         paragraph: India, officially known as the Republic of India, is a diverse and vibrant country located in South Asia. 
@@ -162,16 +162,19 @@ if __name__ == "__main__":
                     """, unsafe_allow_html=True)
     
     input_text = st.text_input('','Please enter your text here')
-    st.write('')
-    col007, col008 = st.columns([10,10])
-    with col007:
-        no_ques = int(st.radio(label = 'Please choose the number of questions to generate',options = [1,2,3,4]))
-    with col008:
-        no_correct = int(st.radio('Please choose the number of correct/nearly_correct answers to generate', options = [1,2]))
-    st.write('')
-    if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
-        input_paragraph = input_text
-        question_and_answers(input_text,no_ques,no_correct)
+    if len(input_text < 30):
+        st.error('Please input a paragpraph with atleast 30 words in it for generating Q&A...', icon="🚨")
+    else:
+        st.write('')
+        col007, col008 = st.columns([10,10])
+        with col007:
+            no_ques = int(st.radio(label = 'Please choose the number of questions to generate',options = [1,2,3,4]))
+        with col008:
+            no_correct = int(st.radio('Please choose the number of correct/nearly_correct answers to generate', options = [1,2]))
+        st.write('')
+        if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
+            input_paragraph = input_text
+            question_and_answers(input_text,no_correct)
 
 
     st.divider()
