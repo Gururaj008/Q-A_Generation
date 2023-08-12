@@ -84,9 +84,10 @@ def question_and_answers(input_text,no_ques,no_options,no_correct):
         Correct Options: (c) & (d)
         '''
         query = f'''Please stick to the following instructions while generating the response \
-        - Create {no_ques} questions having {no_options} options as probable answers with {no_correct} correct answer for each and every question compulsorily. 
+        - Generate only {no_ques} questions 
+        - Having only {no_options} options as probable answers 
+        - And {no_correct} correct answer for each and every question 
         - Please return the question and answers in the same format as specified in the template that is passed as reference for response generation. 
-        - Dont put everthing in a single line. 
         - Please mandatorily add a question mark at the end of every question. 
         - Please compulsorily generate only specified number of options as answers, dont generate 4 options everytime as default'''
         input1 = input_text.split('\n')
