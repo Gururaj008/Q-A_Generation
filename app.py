@@ -162,7 +162,7 @@ if __name__ == "__main__":
                     """, unsafe_allow_html=True)
     
     input_text = st.text_input('','Please enter your text here')
-    if len(input_text < 30):
+    if len(input_text) < 30:
         st.error('Please input a paragpraph with atleast 30 words in it for generating Q&A...', icon="🚨")
     else:
         st.write('')
