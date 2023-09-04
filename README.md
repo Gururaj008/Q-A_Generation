@@ -8,4 +8,4 @@ Using ChatGPT generated Q&A from a paragraph passed as input to the model. So, w
 - Short prompts doesn't necessarily translate into better results
 - Infact its the other-way around ; Longer prompts provide better clarity and context for the model leading to more detailed and relevant outputs
 
-You can check out the web app hosted online at : https://lnkd.in/gJk8n4GX
+You can check out the web app hosted online at : https://gururaj-hc-questionandanswer-generation.streamlit.app/
