@@ -11,7 +11,6 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 def question_and_answers(input_text, no_correct):
     if isinstance(input_text, str):
-        # ... (rest of your template and query setup code - no changes needed here)
         template_1 ='''
         paragraph: India, officially known as the Republic of India, is a diverse and vibrant country located in South Asia.
         It is the seventh-largest country in the world by land area and the second-most populous, home to over 1.3 billion people
@@ -108,6 +107,8 @@ def question_and_answers(input_text, no_correct):
         response = model.generate_content(input3) # Pass the prompt to generate_content
 
         res = response.text # Get the text from the response
+
+        print(f"Raw LLM Response (before JSON parsing):\n{res}") # <<<--- ADDED DEBUG PRINT STATEMENT
 
         try:
             qa_json = json.loads(res) # Try to parse response as JSON
