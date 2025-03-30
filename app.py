@@ -113,9 +113,6 @@ def question_and_answers(input_text, no_correct, no_ques):
         response = model.generate_content(input3)
         res = response.text
 
-        st.write("Raw LLM Response (before JSON parsing):")
-        st.code(res)
-
         # Extract JSON using regex to handle any extra text
         json_match = re.search(r'({.*})', res, re.DOTALL)
         if json_match:
@@ -123,12 +120,10 @@ def question_and_answers(input_text, no_correct, no_ques):
             try:
                 qa_json = json.loads(res_clean)
             except json.JSONDecodeError:
-                st.error("Failed to parse JSON after extraction. Displaying raw output.")
-                st.code(res)
+                st.error("Failed to parse JSON after extraction. Please try again.")
                 return
         else:
-            st.error("Failed to locate JSON in the response. Displaying raw output.")
-            st.code(res)
+            st.error("Failed to locate JSON in the response. Please try again.")
             return
 
         st.markdown("""
@@ -158,16 +153,15 @@ def question_and_answers(input_text, no_correct, no_ques):
                             else:
                                 st.markdown(option_display)
                     elif isinstance(options_data, list):
-                        # If options are a list, try to extract a letter if it exists; otherwise, assign based on index.
+                        # If options are a list, attempt to extract a letter prefix; otherwise assign based on index.
                         for i, option in enumerate(options_data):
                             if isinstance(option, str):
-                                # Try to capture letter prefix (like "a. Option text")
                                 match = re.match(r'^([a-zA-Z])\.?\s*(.*)', option)
                                 if match:
                                     letter = match.group(1)
                                     text = match.group(2)
                                 else:
-                                    letter = chr(97 + i)  # a, b, c, etc.
+                                    letter = chr(97 + i)
                                     text = option
                                 is_correct = letter in correct_options
                                 option_display = f"{letter}. {text}"
@@ -225,7 +219,7 @@ if __name__ == "__main__":
         """, unsafe_allow_html=True)
     st.write('')
     st.markdown(
-        '<div style="text-align: justify">Creating multiple-choice questions based on a given paragraph offers a multifaceted approach to learning. It not only deepens comprehension by requiring the distillation of key concepts and main ideas but also engages learners actively with the material, fostering a stronger grasp of the subject matter.</div>',
+        '<div style="text-align: justify">Creating multiple-choice questions based on a given paragraph offers a multifaceted approach to learning. It not only deepens comprehension by distilling key concepts and main ideas but also engages learners actively with the material.</div>',
         unsafe_allow_html=True)
     st.write('')
     st.markdown(
