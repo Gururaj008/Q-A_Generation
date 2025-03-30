@@ -88,7 +88,7 @@ def question_and_answers(input_text, no_correct, no_ques):
         d. North
         Correct Options: (c) & (d)
         '''
-        # Detailed instruction to force a pure JSON response
+        # Instruction to force a pure JSON response
         query = f'''Please stick to the following instructions while generating the response:
 - Generate only {no_ques} questions.
 - With {no_correct} correct answer for each question.
@@ -97,19 +97,18 @@ def question_and_answers(input_text, no_correct, no_ques):
 - Please generate only the specified number of options as answers (do not always generate 4 options).
 - Return only valid JSON with a top-level key "questions" that contains a list of question objects, each having "question", "options", and "correct_options".
 '''
-        # Clean and merge the user input paragraph
-        input1 = input_text.split('\n')
-        input1 = [para for para in input1 if para.strip()]
-        merged_paras = " ".join(input1)
+        # Merge and clean the input paragraph
+        input_lines = input_text.split('\n')
+        merged_paras = " ".join([line.strip() for line in input_lines if line.strip()])
         input2 = 'Paragraph: ' + merged_paras
 
-        # Select template based on the number of correct answers
+        # Choose the template based on the number of correct answers
         if no_correct == 1:
             input3 = template_1 + query + input2
         else:
             input3 = template_2 + query + input2
 
-        # Use Google Gemini for text generation
+        # Generate content using Google Gemini
         model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
         response = model.generate_content(input3)
         res = response.text
@@ -117,7 +116,7 @@ def question_and_answers(input_text, no_correct, no_ques):
         st.write("Raw LLM Response (before JSON parsing):")
         st.code(res)
 
-        # Extract JSON part using regex to handle extra text
+        # Extract JSON using regex to handle any extra text
         json_match = re.search(r'({.*})', res, re.DOTALL)
         if json_match:
             res_clean = json_match.group(1)
@@ -149,6 +148,7 @@ def question_and_answers(input_text, no_correct, no_ques):
 
                     st.subheader(question_text)
 
+                    # Versatile handling of options: dictionary or list
                     if isinstance(options_data, dict):
                         for option_letter, option_text in options_data.items():
                             is_correct = option_letter in correct_options
@@ -157,8 +157,28 @@ def question_and_answers(input_text, no_correct, no_ques):
                                 st.markdown(f"**:green[{option_display}]**")
                             else:
                                 st.markdown(option_display)
+                    elif isinstance(options_data, list):
+                        # If options are a list, try to extract a letter if it exists; otherwise, assign based on index.
+                        for i, option in enumerate(options_data):
+                            if isinstance(option, str):
+                                # Try to capture letter prefix (like "a. Option text")
+                                match = re.match(r'^([a-zA-Z])\.?\s*(.*)', option)
+                                if match:
+                                    letter = match.group(1)
+                                    text = match.group(2)
+                                else:
+                                    letter = chr(97 + i)  # a, b, c, etc.
+                                    text = option
+                                is_correct = letter in correct_options
+                                option_display = f"{letter}. {text}"
+                                if is_correct:
+                                    st.markdown(f"**:green[{option_display}]**")
+                                else:
+                                    st.markdown(option_display)
+                            else:
+                                st.warning("An option is not in the expected string format.")
                     else:
-                        st.warning("Options data is not in the expected dictionary format.")
+                        st.warning("Options data is not in the expected format (neither dict nor list).")
 
                     if correct_options:
                         correct_options_str = ", ".join(correct_options)
@@ -175,7 +195,7 @@ def question_and_answers(input_text, no_correct, no_ques):
 
 if __name__ == "__main__":
     st.set_page_config(layout="wide")
-    # Display header images
+    # Header images
     col001, col002, col003 = st.columns([10, 10, 10])
     with col001:
         st.image('1.gif')
@@ -205,15 +225,15 @@ if __name__ == "__main__":
         """, unsafe_allow_html=True)
     st.write('')
     st.markdown(
-        '<div style="text-align: justify"> Creating multiple-choice questions based on a given paragraph offers students a multifaceted approach to learning. It not only deepens comprehension by requiring them to distil key concepts and main ideas, but also engages them actively in the material, fostering a stronger grasp of the subject matter. This process encourages critical thinking as students formulate plausible distracters that challenge their own understanding and uncover potential misconceptions. Moreover, the skill of crafting questions cultivates the practical application of acquired knowledge, bridging the gap between theory and real-world scenarios.  </div>',
+        '<div style="text-align: justify">Creating multiple-choice questions based on a given paragraph offers a multifaceted approach to learning. It not only deepens comprehension by requiring the distillation of key concepts and main ideas but also engages learners actively with the material, fostering a stronger grasp of the subject matter.</div>',
         unsafe_allow_html=True)
     st.write('')
     st.markdown(
-        '<div style="text-align: justify"> As students compare their questions to model answers, they engage in meaningful self-assessment, identifying areas of strength and those in need of review. This exercise mirrors the format of assessments, thus aiding in effective test preparation. Beyond assessment, the act of generating questions prompts students to organize information logically, strengthening their ability to structure thoughts coherently. Collaborative sharing of questions with peers and educators initiates a valuable feedback loop, refining their understanding and enhancing communication skills.  </div>',
+        '<div style="text-align: justify">As learners compare their questions to model answers, they engage in self-assessment, identifying strengths and areas for improvement. This exercise mirrors assessment formats, aiding effective test preparation and knowledge retention.</div>',
         unsafe_allow_html=True)
     st.write('')
     st.markdown(
-        '<div style="text-align: justify"> This practice also nurtures vocabulary enrichment as students carefully select appropriate terminology. Ultimately, the process empowers students to take charge of their learning journey, cultivating autonomy and honing higher-order thinking skills. The lasting impact of question generation on long-term retention solidifies its role as a holistic tool for comprehensive understanding, effective study strategies, and academic growth.  </div>',
+        '<div style="text-align: justify">This practice nurtures vocabulary enrichment and encourages the logical organization of information, empowering students to take charge of their learning journey.</div>',
         unsafe_allow_html=True)
     st.write('')
     st.markdown("""
