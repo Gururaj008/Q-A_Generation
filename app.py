@@ -94,7 +94,7 @@ def question_and_answers(input_text, no_correct, no_ques):
 - With {no_correct} correct answer for each question.
 - Please return the question and answers in the same format as specified in the template that is passed as reference for response generation.
 - Please mandatorily add a question mark at the end of every question.
-- Please generate only the specified number of options as answers (do not always generate 4 options).
+- Please generate only the specified number of options as answers.
 - Return only valid JSON with a top-level key "questions" that contains a list of question objects, each having "question", "options", and "correct_options".
 '''
         # Merge and clean the input paragraph
@@ -104,13 +104,13 @@ def question_and_answers(input_text, no_correct, no_ques):
 
         # Choose the template based on the number of correct answers
         if no_correct == 1:
-            input3 = template_1 + query + input2
+            prompt = template_1 + query + input2
         else:
-            input3 = template_2 + query + input2
+            prompt = template_2 + query + input2
 
         # Generate content using Google Gemini
         model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
-        response = model.generate_content(input3)
+        response = model.generate_content(prompt)
         res = response.text
 
         # Extract JSON using regex to handle any extra text
@@ -134,6 +134,9 @@ def question_and_answers(input_text, no_correct, no_ques):
             <p class="custom-text-02">Displaying the generated Q&A</p>
             """, unsafe_allow_html=True)
 
+        # Define fixed option letters
+        fixed_letters = ['A', 'B', 'C', 'D']
+
         if "questions" in qa_json and isinstance(qa_json["questions"], list):
             for q_data in qa_json["questions"]:
                 if isinstance(q_data, dict):
@@ -143,40 +146,47 @@ def question_and_answers(input_text, no_correct, no_ques):
 
                     st.subheader(question_text)
 
-                    # Versatile handling of options: dictionary or list
+                    # Convert options to a list of texts
+                    options_list = []
                     if isinstance(options_data, dict):
-                        for option_letter, option_text in options_data.items():
-                            is_correct = option_letter in correct_options
-                            option_display = f"{option_letter}. {option_text}"
-                            if is_correct:
-                                st.markdown(f"**:green[{option_display}]**")
-                            else:
-                                st.markdown(option_display)
+                        # Sort keys to ensure order; you can adjust ordering as needed.
+                        for key in sorted(options_data.keys()):
+                            options_list.append(options_data[key])
                     elif isinstance(options_data, list):
-                        # If options are a list, attempt to extract a letter prefix; otherwise assign based on index.
-                        for i, option in enumerate(options_data):
-                            if isinstance(option, str):
-                                match = re.match(r'^([a-zA-Z])\.?\s*(.*)', option)
-                                if match:
-                                    letter = match.group(1)
-                                    text = match.group(2)
-                                else:
-                                    letter = chr(97 + i)
-                                    text = option
-                                is_correct = letter in correct_options
-                                option_display = f"{letter}. {text}"
-                                if is_correct:
-                                    st.markdown(f"**:green[{option_display}]**")
-                                else:
-                                    st.markdown(option_display)
-                            else:
-                                st.warning("An option is not in the expected string format.")
+                        options_list = options_data
                     else:
-                        st.warning("Options data is not in the expected format (neither dict nor list).")
+                        st.warning("Options data is not in the expected format.")
+                        continue
 
-                    if correct_options:
-                        correct_options_str = ", ".join(correct_options)
-                        st.markdown(f"**Correct Options:** :green[{correct_options_str}]")
+                    # Only proceed if we have exactly 4 options; otherwise warn.
+                    if len(options_list) != 4:
+                        st.warning("Expected 4 options but received a different number. Displaying available options.")
+                    
+                    # Determine which options are correct.
+                    # If correct_options are already letters, convert them to uppercase.
+                    if all(isinstance(x, str) and len(x.strip()) == 1 and x.strip().isalpha() for x in correct_options):
+                        correct_letters = [x.strip().upper() for x in correct_options]
+                    else:
+                        # Otherwise, try matching based on option text.
+                        correct_letters = []
+                        for i, option in enumerate(options_list):
+                            # If any correct option string (normalized) is found within the option text, mark it.
+                            normalized_option = option.strip().lower()
+                            if any(normalized_option == corr.strip().lower() for corr in correct_options):
+                                correct_letters.append(fixed_letters[i])
+
+                    # Display options with fixed letters.
+                    for i, option in enumerate(options_list):
+                        letter = fixed_letters[i] if i < len(fixed_letters) else chr(65+i)
+                        option_text = option.strip()
+                        option_display = f"{letter}. {option_text}"
+                        if letter in correct_letters:
+                            st.markdown(f"**:green[{option_display}]**")
+                        else:
+                            st.markdown(option_display)
+
+                    if correct_letters:
+                        st.markdown(f"**Correct Options:** :green[{', '.join(correct_letters)}]")
                     else:
                         st.warning("Correct options are missing for this question.")
                     st.write("")
@@ -253,34 +263,7 @@ if __name__ == "__main__":
         if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
             question_and_answers(input_text, no_correct, no_ques)
 
-    # Developer contact details
-    st.divider()
-    st.subheader(':orange[Developer contact details]')
-    st.write('')
-    st.write('')
-    col301, col302 = st.columns([10, 20])
-    with col301:
-        st.markdown(":orange[email id:]")
-    with col302:
-        st.markdown(":yellow[gururaj008@gmail.com]")
-
-    col301, col302 = st.columns([10, 20])
-    with col301:
-        st.markdown(":orange[Personal webpage hosting other Datascience projects:]")
-    with col302:
-        st.markdown(":yellow[http://gururaj008.pythonanywhere.com/]")
-
-    col301, col302 = st.columns([10, 20])
-    with col301:
-        st.markdown(":orange[LinkedIn profile:]")
-    with col302:
-        st.markdown(":yellow[https://www.linkedin.com/in/gururaj-hc-data-science-enthusiast/]")
-
-    col301, col302 = st.columns([10, 20])
-    with col301:
-        st.markdown(":orange[Github link:]")
-    with col302:
-        st.markdown(":yellow[https://github.com/Gururaj008]")
+    
 
     st.divider()
     col1001, col1002, col1003, col1004, col1005 = st.columns([10, 10, 10, 10, 15])
