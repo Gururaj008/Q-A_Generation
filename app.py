@@ -6,11 +6,12 @@ warnings.filterwarnings('ignore')
 import google.generativeai as genai
 
 # Set the Gemini API key from st.secrets
-GEMINI_API_KEY = st.secrets['auth_key']  # Assuming your secret key is still named 'auth_key'
+GEMINI_API_KEY = st.secrets['auth_key']
 genai.configure(api_key=GEMINI_API_KEY)
 
 def question_and_answers(input_text, no_correct):
     if isinstance(input_text, str):
+        # ... (rest of your template and query setup code - no changes needed here)
         template_1 ='''
         paragraph: India, officially known as the Republic of India, is a diverse and vibrant country located in South Asia.
         It is the seventh-largest country in the world by land area and the second-most populous, home to over 1.3 billion people
@@ -108,7 +109,14 @@ def question_and_answers(input_text, no_correct):
 
         res = response.text # Get the text from the response
 
-        items = res.split('\n')
+        try:
+            qa_json = json.loads(res) # Try to parse response as JSON
+        except json.JSONDecodeError:
+            st.error("Failed to parse JSON response from LLM. Displaying raw output.")
+            st.code(res) # Display raw output if JSON parsing fails
+            return
+
+
         st.markdown("""
                     <style>
                     @import url('https://fonts.googleapis.com/css2?family=Agdasima');
@@ -116,22 +124,54 @@ def question_and_answers(input_text, no_correct):
                     </style>
                     <p class="custom-text-02"> Displaying the generated Q&A </p>
                     """, unsafe_allow_html=True)
-        for i in items:
-            st.write(i)
+
+        if "questions" in qa_json and isinstance(qa_json["questions"], list): # Check if 'questions' key exists and is a list
+            for q_data in qa_json["questions"]: # Iterate through questions list
+                if isinstance(q_data, dict): # Ensure each question is a dictionary
+                    question_text = q_data.get("question", "Question text missing") # Safely get question text
+                    options_data = q_data.get("options", {}) # Safely get options, default to empty dict if missing
+                    correct_options = q_data.get("correct_options", []) # Safely get correct options, default to empty list if missing
+
+                    st.subheader(question_text) # Display question as subheader
+
+                    if isinstance(options_data, dict): # Check if options_data is a dict
+                        for option_letter, option_text in options_data.items(): # Iterate through options
+                            is_correct = option_letter in correct_options # Check if option is correct
+                            option_display = f"{option_letter}. {option_text}" # Format option for display
+                            if is_correct:
+                                st.markdown(f"**:green[{option_display}]**") # Bold and green for correct options
+                            else:
+                                st.markdown(f"{option_display}") # Normal markdown for incorrect options
+                    else:
+                        st.warning("Options data is not in the expected dictionary format.") # Warn if options format is incorrect
+
+                    if correct_options: # Display correct options if available
+                        correct_options_str = ", ".join(correct_options) # Join correct option letters
+                        st.markdown(f"**Correct Options:** :green[{correct_options_str}]") # Display correct options in green
+                    else:
+                        st.warning("Correct options are missing for this question.") # Warn if correct options are missing
+                    st.write("") # Add spacing after each question
+
+
+                else:
+                    st.warning("Question data is not in the expected dictionary format.") # Warn if question data format incorrect
+        else:
+            st.warning("No questions found in the JSON response or questions format is incorrect.") # Warn if no questions found or format is wrong
+
     else:
         raise TypeError("Value must be a string data type.")
 
 
 if __name__ == "__main__":
     st.set_page_config(layout="wide")
-    col001, col002, col003 = st.columns([10, 10, 10])
+    col001, col002, col003 = st.columns([10,10,10])
     with col001:
         st.image('1.gif')
     with col002:
         st.image('1.gif')
     with col003:
         st.image('1.gif')
-    col004, col005, col006 = st.columns([100, 300, 100])
+    col004, col005, col006 = st.columns([100,300,100])
     with col005:
         st.markdown("""
                     <style>
@@ -162,26 +202,27 @@ if __name__ == "__main__":
                     <p class="custom-text-02"> Lets try generating some Q&A from the paragraph of your choice..... </p>
                     """, unsafe_allow_html=True)
 
-    input_text = st.text_input('', 'Please enter your text here')
+    input_text = st.text_area('','Please enter your text here', height = 200) # Using text_area for paragraph input
     if len(input_text) < 30:
         st.error('Please input a paragpraph with atleast 30 words in it for generating Q&A...', icon="🚨")
     else:
         st.write('')
-        col007, col008 = st.columns([10, 10])
+        col007, col008 = st.columns([10,10])
         with col007:
-            no_ques = int(st.radio(label='Please choose the number of questions to generate', options=[1, 2, 3, 4]))
+            no_ques = int(st.radio(label = 'Please choose the number of questions to generate',options = [1,2,3,4]))
         with col008:
-            no_correct = int(st.radio('Please choose the number of correct/nearly_correct answers to generate', options=[1, 2]))
+            no_correct = int(st.radio('Please choose the number of correct/nearly_correct answers to generate', options = [1,2]))
         st.write('')
         if st.button('Generate the Q&A for the above paragraph', use_container_width=True):
             input_paragraph = input_text
-            question_and_answers(input_text, no_correct)
+            question_and_answers(input_text,no_correct)
+
 
     st.divider()
     st.subheader(':orange[Developer contact details]')
     st.write('')
     st.write('')
-    col301, col302 = st.columns([10, 20])
+    col301, col302 = st.columns([10,20])
     with col301:
         st.markdown(":orange[email id:]")
         st.write('')
@@ -189,7 +230,7 @@ if __name__ == "__main__":
         st.markdown(":yellow[gururaj008@gmail.com]")
         st.write('')
 
-    col301, col302 = st.columns([10, 20])
+    col301, col302 = st.columns([10,20])
     with col301:
         st.markdown(":orange[Personal webpage hosting other Datascience projects :]")
         st.write('')
@@ -197,7 +238,7 @@ if __name__ == "__main__":
         st.markdown(":yellow[http://gururaj008.pythonanywhere.com/]")
         st.write('')
 
-    col301, col302 = st.columns([10, 20])
+    col301, col302 = st.columns([10,20])
     with col301:
         st.markdown(":orange[LinkedIn profile :]")
         st.write('')
@@ -205,7 +246,7 @@ if __name__ == "__main__":
         st.markdown(":yellow[https://www.linkedin.com/in/gururaj-hc-data-science-enthusiast/]")
         st.write('')
 
-    col301, col302 = st.columns([10, 20])
+    col301, col302 = st.columns([10,20])
     with col301:
         st.markdown(":orange[Github link:]")
         st.write('')
@@ -214,7 +255,7 @@ if __name__ == "__main__":
         st.write('')
 
     st.divider()
-    col1001, col1002, col1003, col1004, col1005 = st.columns([10, 10, 10, 10, 15])
+    col1001, col1002, col1003,col1004, col1005 = st.columns([10,10,10,10,15])
     with col1005:
         st.markdown("""
                                 <style>
