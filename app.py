@@ -216,7 +216,7 @@ if __name__ == "__main__":
             @import url('https://fonts.googleapis.com/css2?family=Agdasima');
             .custom-text-01 { font-family: 'Agdasima', sans-serif; font-size: 70px; color: cyan; }
             </style>
-            <p class="custom-text-01">Q&A Generation using LLM</p>
+            <h1 class="custom-text-01">Q&A Generation using LLM</h1>
             """, unsafe_allow_html=True)
     
     # About the project section
